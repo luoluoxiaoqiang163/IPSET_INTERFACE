@@ -1,0 +1,107 @@
+
+
+QMenuBar{
+ background-color: rgb(46,49,66);
+ color:yellow;
+ border: (70,76,101);
+}
+QMenu {
+     background-color: rgb(46,49,66);
+     border: (70,76,101);
+ }
+
+ QMenu::item {
+     background-color: transparent;
+     color:yellow;
+ }
+
+ QMenu::item:selected { /* when user selects item using mouse or keyboard */
+     background-color: #2dabf9;
+ }
+
+
+
+QMainWindow{
+        /*font-color: white;*/
+		/*border-image:url(./images/screen2.jpg);*/
+		background-color:rgb(46,49,66);
+
+
+}
+
+
+QPushButton {
+
+                /*font-family:STCaiyun;*/
+
+                /*color: rgb(102,102,102);*/
+                color:rgb(219,212,212);
+                /*border:2px groove gray;*/
+                /*border-radius:10px;*/
+                /*padding:2px 4px;*/
+
+				/*border-color:rgb(102,102,102)*/
+				background-color:rgb(46,49,66);
+
+
+
+
+			}
+
+
+QPushButton:checked{
+
+                 /*border-image:url(./images/button_off.png);*/
+                 border:2px groove gray;border-radius:10px;padding:2px 4px;
+
+                color: rgb(46,49,66);
+                background-color: rgb(228,229,228);
+			}
+
+
+QPushButton[name = "button_ser"] {
+
+                /*font-family:STCaiyun;*/
+				/*background-color: blue;*/
+			}
+QGroupBox{
+
+
+          /*font-family:STHupo;*/
+          font-size:10pt;
+
+         /*background-color:rgb(70,76,101);*/
+
+          border:6px solid rgb(70,76,101);
+
+
+         }
+
+QLineEdit{
+background-color:rgb(70,76,101);
+color: yellow;
+}
+QLabel{
+  color:rgb(219,212,212);
+}
+QGroupBox::title {
+    color: yellow;
+    subcontrol-origin: margin;
+    subcontrol-position: top left;
+    margin-left: 5px;
+}
+
+/*QMssageBox的样式表*/
+QMessageBox {
+	background-color: rgb(46,49,66)
+}
+
+/*QWidget{
+color:white;
+background-color:rgb(46,49,66);
+
+}*/
+
+
+
+
