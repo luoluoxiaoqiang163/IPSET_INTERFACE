@@ -2,11 +2,9 @@
 from leadcamera_4006s_ipset import Ui_MainWindow_LEADCAMERA4006s_IPSET
 
 # pyqt5库的导入
-from PyQt5.QtWidgets import QStyleFactory, QApplication, QMainWindow, QWidget, QLineEdit, QListView, QHBoxLayout, QGridLayout, QMessageBox, QFileDialog, QStatusBar, QToolTip
-from PyQt5 import QtCore, QtWidgets, QtGui
-from PyQt5.QtCore import QIODevice, pyqtSignal, QThread
-from PyQt5.QtGui import QPixmap, QIcon, QFont
-from PyQt5.QtSerialPort import QSerialPort, QSerialPortInfo
+from PyQt5.QtWidgets import  QApplication, QMainWindow, QWidget, QMessageBox
+from PyQt5.QtGui import QIcon
+
 
 # 其它工具库的使用
 import sys
@@ -27,7 +25,7 @@ class Main(QMainWindow, QWidget, Ui_MainWindow_LEADCAMERA4006s_IPSET):
         self.ip2mac_show()  # 搜索本机的ip与mac并且列出
         self.listWidget_ip2mac_show.itemClicked.connect(self.ip2mac_set_show)  # 点击时连接设置ip2mac的设置显示函数
         self.pushButton_set_ip2mac.clicked.connect(self.arplist_bind)  # 绑定当前相机的ip与mac地址
-
+        self.str_data = []
         self.LoadStyle()  # 界面的美化函数
 
     def LoadStyle(self):
@@ -37,7 +35,12 @@ class Main(QMainWindow, QWidget, Ui_MainWindow_LEADCAMERA4006s_IPSET):
         self.setStyleSheet(qssStyle)
         # 分别给各个部件修饰
         self.listWidget_ip2mac_show.setStyleSheet("QWidget{color:white;background-color:rgb(46,49,66);}")
-
+    def showMesaage(self,data):
+        """显示配置信息到显示框"""
+        self.str_data.append(data)
+        if len(self.str_data)>10:
+            self.str_data.pop(0)
+        self.label_message_show.setText(''.join(self.str_data))
     def arplist_bind(self):
         """将相机的mac与ip地址绑定在静态列表上"""
         if (self.lineEdit_camera_ip.text() != '') and (self.lineEdit_camera_mac.text() != '') and (self.lineEdit_pc_ip.text() != '') and (self.lineEdit_pc_mac.text() != ''):
@@ -111,22 +114,27 @@ class Main(QMainWindow, QWidget, Ui_MainWindow_LEADCAMERA4006s_IPSET):
         camera_addr = (camera_ip, 8800)
         pc_addr = (pc_ip, 9000)
         pc_ip_data = re.search('(\d+).(\d+).(\d+).(\d+)', pc_ip)
-        pc_mac_data = re.search('([0-9a-fA-F]+)-([0-9a-fA-F]+)-([0-9a-fA-F]+)-([0-9a-fA-F]+([0-9a-fA-F]+)-([0-9a-fA-F]+))', pc_mac)
+        pc_mac_data = re.search('([0-9a-fA-F]+)-([0-9a-fA-F]+)-([0-9a-fA-F]+)-([0-9a-fA-F]+)-([0-9a-fA-F]+)-([0-9a-fA-F]+)', pc_mac)
         data_pc_ip = self.IPSET_G6500_DATA(63, int(pc_ip_data.group(1)), int(pc_ip_data.group(2)), int(pc_ip_data.group(3)), int(pc_ip_data.group(4)))
-        data_pc_mac1 = self.IPSET_G6500_DATA(61, 0, 0, int(pc_mac_data.group(1)), int(pc_mac_data.group(2)))
-        data_pc_mac2 = self.IPSET_G6500_DATA(62, int(pc_mac_data.group(3)), int(pc_mac_data.group(4)), int(pc_mac_data.group(5)), int(pc_mac_data.group(6)))
+        data_pc_mac1 = self.IPSET_G6500_DATA(61, 0, 0, int(pc_mac_data.group(1),16), int(pc_mac_data.group(2),16))
+        data_pc_mac2 = self.IPSET_G6500_DATA(62, int(pc_mac_data.group(3),16), int(pc_mac_data.group(4),16), int(pc_mac_data.group(5), 16), int(pc_mac_data.group(6), 16))
         self.camera_sk = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.camera_sk.bind(pc_addr)
         self.camera_sk.sendto(data_pc_mac1, camera_addr)
         self.camera_sk.sendto(data_pc_mac2, camera_addr)
-        print("dst_mac done")
+        self.showMesaage("dst_mac done\n")
         self.camera_sk.sendto(data_pc_ip, camera_addr)
-        print("dst_ip done")
+        self.showMesaage("dst_ip done\n")
+        anwer = self.mxq_messsagebox.warning(self, "ip_mac参数保存", "请确保相机其他参数正常！！！\n是否保存所有参数？", QMessageBox.Yes | QMessageBox.No,
+                                     QMessageBox.Yes)
+        if anwer == QMessageBox.Yes:
+            self.camera_sk.sendto(bytes([170, 84, 0, 1, 4, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 9, 170, 92]), camera_addr)
+            self.camera_sk.sendto(bytes([170, 84, 0, 1, 252, 0, 0, 0, 0, 0, 4, 0, 1, 4, 0, 1, 7, 170, 92]), camera_addr)
+        self.showMesaage("参数保存\n")
 
 
 
-
-    def IPSET_G6500_DATA(commandinput, dataI1, dataI2, dataI3, dataI4):
+    def IPSET_G6500_DATA(self,commandinput, dataI1, dataI2, dataI3, dataI4):
 
         commandinput = commandinput * 4
         # RorWinput = input("请选择读或者写(读完为1，写为0):")
@@ -153,7 +161,7 @@ class Main(QMainWindow, QWidget, Ui_MainWindow_LEADCAMERA4006s_IPSET):
         command = [0xaa, 0x54, 0x00, com1, com2, comaddr1, comaddr2, comaddr3, comaddr4, \
                    datalenth1, datalenth2, Rev, data1, data2, data3, data4, checksum, 0xaa, 0x5c]
 
-        return command
+        return bytes(command)
 
     def IPSET_4006A(self, pc_ip, pc_mac, camera_ip, camera_mac):
         """4006A相机的内部ip"""
