@@ -38,10 +38,6 @@ class Main(QMainWindow, QWidget, Ui_MainWindow_LEADCAMERA4006s_IPSET):
         # 分别给各个部件修饰
         self.listWidget_ip2mac_show.setStyleSheet("QWidget{color:white;background-color:rgb(46,49,66);}")
 
-    def socket_create(self, pc_ip, pc_mac, camera_ip, camera_mac):
-        """套接字的创建，基础功能"""
-        self.camera_sk = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
     def arplist_bind(self):
         """将相机的mac与ip地址绑定在静态列表上"""
         if (self.lineEdit_camera_ip.text() != '') and (self.lineEdit_camera_mac.text() != '') and (self.lineEdit_pc_ip.text() != '') and (self.lineEdit_pc_mac.text() != ''):
@@ -112,6 +108,7 @@ class Main(QMainWindow, QWidget, Ui_MainWindow_LEADCAMERA4006s_IPSET):
     def IPSET_G6500(self, pc_ip, pc_mac, camera_ip, camera_mac):
         """6500M相机设置内部ip"""
 
+
     def IPSET_G6500_DATA(commandinput, dataI1, dataI2, dataI3, dataI4):
 
         commandinput = commandinput * 4
@@ -133,15 +130,23 @@ class Main(QMainWindow, QWidget, Ui_MainWindow_LEADCAMERA4006s_IPSET):
         data3 = dataI3 & 0xff
         data4 = dataI4 & 0xff
 
-
         checksum = (0x00 + com1 + com2 + comaddr1 + comaddr2 + \
                     comaddr3 + comaddr4 + datalenth1 + datalenth2 + \
                     Rev + data1 + data2 + data3 + data4) & 0xff  # 校验和暂时不加
         command = [0xaa, 0x54, 0x00, com1, com2, comaddr1, comaddr2, comaddr3, comaddr4, \
                    datalenth1, datalenth2, Rev, data1, data2, data3, data4, checksum, 0xaa, 0x5c]
-        
+
+        return command
+
     def IPSET_4006A(self, pc_ip, pc_mac, camera_ip, camera_mac):
         """4006A相机的内部ip"""
+
+        # data_pc_ip = IPSET_G6500_DATA(63, dataI1, dataI2, dataI3, dataI4)
+        # data_pc_mac1 = IPSET_G6500_DATA(58, dataI1, dataI2, dataI3, dataI4)
+        # data_pc_mac2 = IPSET_G6500_DATA(59, dataI1, dataI2, dataI3, dataI4)
+        self.camera_sk = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.camera_sk.bind(pc_ip)
+        self.camera_sk.sendto()
 
     def ip2mac_set_show(self, item):
         """将选中的ip与mac填入选择项中"""
@@ -151,6 +156,10 @@ class Main(QMainWindow, QWidget, Ui_MainWindow_LEADCAMERA4006s_IPSET):
         pc_mac_text = item.text()[str_flag_ip[1]:].strip()
         self.lineEdit_pc_ip.setText(pc_ip_text)
         self.lineEdit_pc_mac.setText(pc_mac_text)
+
+
+
+
 
     def ip2mac_show(self):
         """搜索ip与mac的对应关系并且列出"""
