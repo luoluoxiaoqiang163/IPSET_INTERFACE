@@ -104,9 +104,23 @@ class Main(QMainWindow, QWidget, Ui_MainWindow_LEADCAMERA4006s_IPSET):
             return
         self.mxq_messsagebox.warning(self, "arp绑定结果", "绑定成功", QMessageBox.Yes | QMessageBox.No,
                                      QMessageBox.Yes)
+        self.IPSET_G6500(pc_ip, pc_mac, camera_ip, camera_mac)
 
     def IPSET_G6500(self, pc_ip, pc_mac, camera_ip, camera_mac):
         """6500M相机设置内部ip"""
+        camera_addr = (camera_ip, 8800)
+        pc_addr = (pc_ip, 9000)
+        pc_ip_data = re.search('(\d+).(\d+).(\d+).(\d+)', pc_ip)
+        pc_mac_data = re.search('([0-9a-fA-F]+)-([0-9a-fA-F]+)-([0-9a-fA-F]+)-([0-9a-fA-F]+([0-9a-fA-F]+)-([0-9a-fA-F]+))', pc_mac)
+        data_pc_ip = self.IPSET_G6500_DATA(63, int(pc_ip_data.group(1)), int(pc_ip_data.group(2)), int(pc_ip_data.group(3)), int(pc_ip_data.group(4)))
+        data_pc_mac1 = self.IPSET_G6500_DATA(61, 0, 0, int(pc_mac_data.group(1)), int(pc_mac_data.group(2)))
+        data_pc_mac2 = self.IPSET_G6500_DATA(62, int(pc_mac_data.group(3)), int(pc_mac_data.group(4)), int(pc_mac_data.group(5)), int(pc_mac_data.group(6)))
+        self.camera_sk = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.camera_sk.bind(pc_addr)
+        self.camera_sk.sendto(data_pc_mac1,camera_addr)
+        self.camera_sk.sendto(data_pc_mac2, camera_addr)
+        self.camera_sk.sendto(data_pc_ip, camera_addr)
+
 
 
     def IPSET_G6500_DATA(commandinput, dataI1, dataI2, dataI3, dataI4):
@@ -140,13 +154,6 @@ class Main(QMainWindow, QWidget, Ui_MainWindow_LEADCAMERA4006s_IPSET):
 
     def IPSET_4006A(self, pc_ip, pc_mac, camera_ip, camera_mac):
         """4006A相机的内部ip"""
-
-        # data_pc_ip = IPSET_G6500_DATA(63, dataI1, dataI2, dataI3, dataI4)
-        # data_pc_mac1 = IPSET_G6500_DATA(58, dataI1, dataI2, dataI3, dataI4)
-        # data_pc_mac2 = IPSET_G6500_DATA(59, dataI1, dataI2, dataI3, dataI4)
-        self.camera_sk = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.camera_sk.bind(pc_ip)
-        self.camera_sk.sendto()
 
     def ip2mac_set_show(self, item):
         """将选中的ip与mac填入选择项中"""
