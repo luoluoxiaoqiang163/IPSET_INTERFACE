@@ -117,9 +117,12 @@ class Main(QMainWindow, QWidget, Ui_MainWindow_LEADCAMERA4006s_IPSET):
         data_pc_mac2 = self.IPSET_G6500_DATA(62, int(pc_mac_data.group(3)), int(pc_mac_data.group(4)), int(pc_mac_data.group(5)), int(pc_mac_data.group(6)))
         self.camera_sk = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.camera_sk.bind(pc_addr)
-        self.camera_sk.sendto(data_pc_mac1,camera_addr)
+        self.camera_sk.sendto(data_pc_mac1, camera_addr)
         self.camera_sk.sendto(data_pc_mac2, camera_addr)
+        print("dst_mac done")
         self.camera_sk.sendto(data_pc_ip, camera_addr)
+        print("dst_ip done")
+
 
 
 
