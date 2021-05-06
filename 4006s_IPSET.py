@@ -1,4 +1,4 @@
-# 主窗口的导入
+# 主窗口的导入的库
 from leadcamera_4006s_ipset import Ui_MainWindow_LEADCAMERA4006s_IPSET
 
 # pyqt5库的导入
